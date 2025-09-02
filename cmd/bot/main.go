@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bot"
+	"github.com/Chigvero/tg-bot/internal/app/commands"
 	"github.com/Chigvero/tg-bot/internal/service/product"
 	"github.com/joho/godotenv"
 	"log"
@@ -28,7 +30,9 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
-	producetServce := product.NewService()
+	productService := product.NewService()
+
+	commander := commands.NewCommander(bot, productService)
 
 	for update := range updates {
 		if update.Message == nil {
@@ -37,41 +41,11 @@ func main() {
 
 		switch update.Message.Command() {
 		case "help":
-			printHelp(bot, update.Message)
+			commander.Help(update.Message)
 		case "list":
-			listCommand(bot, update.Message, producetServce)
+			commander.ListCommand(update.Message)
 		default:
-			defaultBehavior(bot, update.Message)
+			commander.DefaultBehavior(update.Message)
 		}
 	}
-}
-
-func printHelp(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message) {
-	msg := tgbotapi.NewMessage(inputMessage.Chat.ID,
-		"/help - help\n"+
-			"/list - list products\n",
-	)
-
-	bot.Send(msg)
-}
-
-func listCommand(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message, productService *product.Service) {
-	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "Here all the products: \n\n")
-
-	products := productService.List()
-	for _, p := range products {
-		msg.Text += p.Title
-		msg.Text += "\n"
-	}
-
-	bot.Send(msg)
-}
-
-func defaultBehavior(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message) {
-	log.Printf("[%s] %s", inputMessage.From.UserName, inputMessage.Text)
-
-	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "You wrote:"+inputMessage.Text)
-	//msg.ReplyToMessageID = update.Message.MessageID
-
-	bot.Send(msg)
 }
