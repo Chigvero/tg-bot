@@ -1,6 +1,13 @@
 package commands
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	"encoding/json"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
+
+type CommandData struct {
+	Offset int `json:"offset"`
+}
 
 func (c *Commander) ListCommand(inputMessage *tgbotapi.Message) {
 	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "Here all the products: \n\n")
@@ -10,6 +17,15 @@ func (c *Commander) ListCommand(inputMessage *tgbotapi.Message) {
 		msg.Text += p.Title
 		msg.Text += "\n"
 	}
+
+	serializedData, _ := json.Marshal(CommandData{Offset: 21})
+	keyboad := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("next Page", string(serializedData)),
+		),
+	)
+
+	msg.ReplyMarkup = keyboad
 
 	c.bot.Send(msg)
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bot"
 	"github.com/Chigvero/tg-bot/internal/app/commands"
 	"github.com/Chigvero/tg-bot/internal/service/product"
 	"github.com/joho/godotenv"
@@ -35,17 +34,6 @@ func main() {
 	commander := commands.NewCommander(bot, productService)
 
 	for update := range updates {
-		if update.Message == nil {
-			continue
-		} // Ignore non-message updates
-
-		switch update.Message.Command() {
-		case "help":
-			commander.Help(update.Message)
-		case "list":
-			commander.ListCommand(update.Message)
-		default:
-			commander.DefaultBehavior(update.Message)
-		}
+		commander.HandleUpdate(update)
 	}
 }
